@@ -29,7 +29,7 @@ public class ServicoDTO implements Serializable {
         ativo = servico.isAtivo();
         prazo = servico.getPrazo();
         tipoServico = new TipoServicoDTO(servico.getTipoServico());
-        anunciante = servico.getUsuario().getNome();
-        contato = servico.getUsuario().getCelular();
+        //anunciante = servico.getUsuario().getNome();
+        //contato = servico.getUsuario().getCelular();
     }
 }
