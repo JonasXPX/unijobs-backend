@@ -1,68 +1,58 @@
 package com.uniamerica.unijobsbackend.controllers;
 
 import com.uniamerica.unijobsbackend.dto.UsuarioDto;
-import com.uniamerica.unijobsbackend.models.Usuario;
-import com.uniamerica.unijobsbackend.repositories.UsuarioRepository;
+import com.uniamerica.unijobsbackend.dto.input.AtualizarUsuarioDTO;
+import com.uniamerica.unijobsbackend.services.UsuarioService;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
 @OpenAPIDefinition
 @SecurityRequirement(name = "bearerAuth")
-@RequestMapping("/usuarios")
+@RequestMapping("/users")
+@CrossOrigin
 public class UsuarioController {
+    private final UsuarioService usuarioService;
 
-    @Autowired //injecao de dependecias conceito - SOLID eh um padrao de design de codigo
-    private UsuarioRepository usuarioRepository;
+    @Autowired
+    public UsuarioController(UsuarioService usuarioService) {
+        this.usuarioService = usuarioService;
+    }
 
     @GetMapping
-    public ResponseEntity<List<UsuarioDto>>BuscarTodos(){
-        List<UsuarioDto> usuarios = usuarioRepository.findAll()
-                .stream().map(user->new UsuarioDto(user)).collect(Collectors.toList());
-        return ResponseEntity.ok(usuarios);
+    public ResponseEntity<List<UsuarioDto>> index() {
+
+        var users = usuarioService.index().stream().map(UsuarioDto::new).collect(Collectors.toList());
+
+        return ResponseEntity.ok(users);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UsuarioDto> buscarUsuario(@PathVariable Integer id){
-        Optional<Usuario> user = usuarioRepository.findById(id);
-        if (user.isEmpty()){
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(new UsuarioDto(user.get()));
+    public ResponseEntity<UsuarioDto> show(@PathVariable Integer id) {
+
+        var user = usuarioService.show(id);
+        return ResponseEntity.ok(new UsuarioDto(user));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UsuarioDto> atualizarUsuario(@PathVariable Integer id, @RequestBody Usuario usuario){
-        Optional<Usuario> user = usuarioRepository.findById(id);
-        if (user.isEmpty()) {
-            return  ResponseEntity.notFound().build();
-        }
-        Usuario saved = user.get();
-        saved.setEmail(usuario.getEmail());
-        saved.setSenha(usuario.getSenha());
-        saved.setNome(usuario.getNome());
-        saved.setCelular(usuario.getCelular());
-        saved.setRa(usuario.getCelular());
-        saved = usuarioRepository.save(saved);
-        return ResponseEntity.ok(new UsuarioDto(saved));
+    public ResponseEntity<UsuarioDto> update(@PathVariable Integer id, @Valid @RequestBody AtualizarUsuarioDTO usuario) {
+        var userUpdate = usuarioService.update(usuario.toModel(), id);
+        return ResponseEntity.ok(new UsuarioDto(userUpdate));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> removerUsuario(@PathVariable Integer id){
-        Optional<Usuario> user = usuarioRepository.findById(id);
-        if (user.isEmpty()){
-            return ResponseEntity.notFound().build();
-        }
-        usuarioRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Void> destroy(@PathVariable Integer id) {
+        usuarioService.destroy(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
+
+
 }

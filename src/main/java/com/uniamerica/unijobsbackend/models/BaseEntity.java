@@ -1,6 +1,5 @@
 package com.uniamerica.unijobsbackend.models;
 
-import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -14,6 +13,7 @@ public abstract class BaseEntity {
     @Column(updatable = false)
     @CreationTimestamp
     private LocalDateTime createdAt;
+
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 }

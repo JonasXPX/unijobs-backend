@@ -1,0 +1,23 @@
+name: Deploy to docker hub
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Build the Docker image
+      uses: appleboy/ssh-action@v0.1.4
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: github
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: 22
+        script: |
+          rm -rf api-build/ | exit 1
+          git clone --branch ${{ github.ref_name }} --single-branch  https://github.com/${{github.repository}}.git api-build
+          cd api-build/ && docker build . --file Dockerfile --tag ghcr.io/jonasxpx/unijobs-java:${{ github.ref_name }}
+          docker service update --image ghcr.io/jonasxpx/unijobs-java:${{ github.ref_name }} web_unijobs-api
+
